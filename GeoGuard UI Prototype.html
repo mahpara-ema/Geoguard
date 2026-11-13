@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GeoGuard – UI Prototype</title>
+<style>
+:root{--bg:#f4f1e8;--surface:#fffdf7;--ink:#26332a;--muted:#6a7566;--green:#2f6b3a;--soft:#e3eed9;--earth:#a8794a;--line:#ddd6c3;--on:#fff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141a15;--surface:#1c241d;--ink:#e6ebdf;--muted:#9aa793;--green:#6fbf7f;--soft:#26382a;--earth:#d0a173;--line:#2f3a30;--on:#0f1a11}}
+:root[data-theme="dark"]{--bg:#141a15;--surface:#1c241d;--ink:#e6ebdf;--muted:#9aa793;--green:#6fbf7f;--soft:#26382a;--earth:#d0a173;--line:#2f3a30;--on:#0f1a11}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:12px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.logo{font-weight:700;font-size:1.25rem;color:var(--green)}
+.logo small{display:block;font-weight:400;font-size:.75rem;color:var(--muted)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav button{background:none;border:1px solid transparent;color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit}
+nav button.on{background:var(--soft);border-color:var(--green);color:var(--green);font-weight:600}
+main{max-width:1000px;margin:0 auto;padding:20px}
+section{display:none}section.on{display:block}
+h2{margin:.2em 0 .1em;color:var(--green)}
+.sub{color:var(--muted);margin:0 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.img{aspect-ratio:3/2;border-radius:10px;background:var(--soft);border:2px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);overflow:hidden;text-align:center;padding:8px}
+.img svg,.img img{width:100%;height:100%;object-fit:cover;display:block}
+.img.has{border-style:solid}
+.btn{background:var(--green);color:var(--on);border:0;padding:10px 16px;border-radius:10px;cursor:pointer;font:inherit;font-weight:600;margin:10px 8px 0 0}
+.btn.alt{background:none;color:var(--green);border:1px solid var(--green)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+input[type=text],select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+input[type=file]{display:none}
+.bar{height:10px;background:var(--soft);border-radius:6px;overflow:hidden;margin:4px 0 10px}
+.bar i{display:block;height:100%;background:var(--green)}
+.tag{display:inline-block;background:var(--soft);color:var(--green);border-radius:999px;padding:2px 12px;font-weight:700}
+.row{display:flex;justify-content:space-between;font-size:.9rem}
+.res{list-style:none;margin:10px 0 0;padding:0}
+.res li{padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:6px;cursor:pointer}
+.res li:hover{border-color:var(--green);background:var(--soft)}
+.note{font-size:.8rem;color:var(--muted);margin-top:10px}
+.hide{display:none}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+td,th{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left}
+.up{color:var(--earth);font-weight:600}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--green);color:var(--on);padding:10px 18px;border-radius:10px;display:none}
+footer{text-align:center;color:var(--muted);font-size:.8rem;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">🌿 GeoGuard<small>Satellite land-use explorer</small></div>
+  <nav>
+    <button data-v="classify">Classify &amp; Report</button>
+    <button data-v="explore">Search &amp; Download</button>
+    <button data-v="compare">Compare Dates</button>
+  </nav>
+</header>
+<main>
+
+<section id="classify">
+  <h2>Classify &amp; Report</h2>
+  <p class="sub">Upload a satellite image to find its land-cover category, then get a short plain-language report.</p>
+  <div class="grid">
+    <div class="card">
+      <div class="img" id="upBox">No image yet</div>
+      <label class="btn" for="file" style="display:inline-block">Upload image</label>
+      <input type="file" id="file" accept="image/*">
+      <button class="btn alt" id="sample">Use sample image</button>
+      <button class="btn" id="classifyBtn" disabled>Classify</button>
+      <p class="note">Prototype: results are mock data. The real app will call the EuroSAT CNN.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-top:0">Result</h3>
+      <div id="resEmpty" class="sub">Upload an image and press Classify.</div>
+      <div id="resBox" class="hide">
+        <span class="tag" id="label"></span>
+        <p class="row"><span>Confidence</span><b id="conf"></b></p>
+        <div class="bar"><i id="confBar"></i></div>
+        <div id="others"></div>
+        <button class="btn" id="reportBtn">Generate report</button>
+        <div id="report" class="hide" style="margin-top:12px;background:var(--soft);padding:12px;border-radius:10px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="explore">
+  <h2>Search &amp; Download</h2>
+  <p class="sub">Search for a place, view its satellite image, and download it.</p>
+  <div class="grid">
+    <div class="card">
+      <input type="text" id="q" placeholder="Try: Amazon, Delta, Valley, Alps">
+      <button class="btn" id="searchBtn">Search</button>
+      <ul class="res" id="results"></ul>
+    </div>
+    <div class="card">
+      <div class="img" id="exBox">Pick a location to view it</div>
+      <p class="row" style="margin:8px 0 0"><span id="exName">–</span><span id="exCoord"></span></p>
+      <button class="btn" id="dlBtn" disabled>Download image</button>
+    </div>
+  </div>
+</section>
+
+<section id="compare">
+  <h2>Compare Dates</h2>
+  <p class="sub">See how land use at one location changed between two dates.</p>
+  <div class="card">
+    <div class="grid">
+      <div><label>Location</label><select id="cLoc"></select></div>
+      <div class="grid"><div><label>Before</label><select id="d1"><option>Jan 2018</option><option>Jan 2020</option></select></div>
+      <div><label>After</label><select id="d2"><option>Jan 2024</option><option>Jan 2022</option></select></div></div>
+    </div>
+    <button class="btn" id="cmpBtn">Compare</button>
+  </div>
+  <div id="cmpOut" class="hide">
+    <div class="grid" style="margin-top:16px">
+      <div class="card"><div class="img has" id="cA"></div><p class="row"><b id="cAd"></b><span>Forest 62%</span></p></div>
+      <div class="card"><div class="img has" id="cB"></div><p class="row"><b id="cBd"></b><span>Forest 41%</span></p></div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-top:0">Change summary</h3>
+      <table><tr><th>Category</th><th>Before</th><th>After</th></tr>
+      <tr><td>Forest</td><td>62%</td><td class="up">41% ▼</td></tr>
+      <tr><td>Residential</td><td>8%</td><td class="up">21% ▲</td></tr>
+      <tr><td>Annual crop</td><td>30%</td><td>38%</td></tr></table>
+      <p class="note">Mock numbers for the prototype.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+<footer>GeoGuard UI prototype · CSE 327 · all data is simulated</footer>
+<div id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const PAL={green:['#2f6b3a','#3f8a4c','#285a33','#6b8f3a'],mix:['#3f8a4c','#c9b36a','#8a8a7a','#a8794a','#5b7f9a'],warm:['#a8794a','#c9b36a','#8a8a7a','#6b8f3a','#b05a3c']};
+function tile(p,seed){let s=seed,r=()=>(s=(s*9301+49297)%233280)/233280,o='';
+ for(let y=0;y<8;y++)for(let x=0;x<12;x++)o+=`<rect x="${x*25}" y="${y*25}" width="25" height="25" fill="${p[Math.floor(r()*p.length)]}"/>`;
+ return `<svg viewBox="0 0 300 200" preserveAspectRatio="xMidYMid slice">${o}</svg>`}
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';setTimeout(()=>e.style.display='none',1800)}
+// Navigation
+const views=['classify','explore','compare'];
+function route(){const v=views.includes(location.hash.slice(1))?location.hash.slice(1):'classify';
+ views.forEach(n=>{$(n).classList.toggle('on',n===v)});
+ document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===v))}
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{location.hash=b.dataset.v});
+addEventListener('hashchange',route);route();
+// Classify
+let hasImg=false;
+function setImg(html){$('upBox').innerHTML=html;$('upBox').classList.add('has');hasImg=true;$('classifyBtn').disabled=false;$('resBox').classList.add('hide');$('resEmpty').classList.remove('hide')}
+$('file').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>setImg(`<img alt="Uploaded satellite image" src="${r.result}">`);r.readAsDataURL(f)};
+$('sample').onclick=()=>setImg(tile(PAL.green,7));
+$('classifyBtn').onclick=()=>{
+ $('resEmpty').classList.add('hide');$('resBox').classList.remove('hide');$('report').classList.add('hide');
+ $('label').textContent='Forest';$('conf').textContent='93%';$('confBar').style.width='93%';
+ $('others').innerHTML=[['Pasture',4],['Herbaceous Vegetation',2],['River',1]].map(a=>`<div class="row"><span>${a[0]}</span><span>${a[1]}%</span></div><div class="bar"><i style="width:${a[1]}%;background:var(--earth)"></i></div>`).join('')};
+$('reportBtn').onclick=()=>{const r=$('report');r.classList.remove('hide');r.textContent='Generating report…';
+ setTimeout(()=>{r.innerHTML='<b>Land-use report</b><br>This area is classified as <b>Forest</b> with high confidence. Dense tree cover usually means stable land use, but nearby cleared patches can signal early pressure from farming or settlement. Compare with an older image to check for change.<div class="note">AI-generated summary based on the classification. Not a professional assessment.</div>'},800)};
+// Explore
+const PLACES=[{n:'Amazon Basin',c:'3.4° S, 60.0° W',p:PAL.green,s:3},{n:'Nile Delta',c:'30.9° N, 31.0° E',p:PAL.mix,s:11},{n:'Rhine Valley',c:'50.1° N, 7.6° E',p:PAL.mix,s:21},{n:'Swiss Alps',c:'46.6° N, 8.0° E',p:PAL.warm,s:5}];
+let cur=null;
+function search(){const q=$('q').value.trim().toLowerCase();const hits=PLACES.filter(p=>!q||p.n.toLowerCase().includes(q));
+ $('results').innerHTML=hits.length?hits.map((p,i)=>`<li data-i="${PLACES.indexOf(p)}"><b>${p.n}</b><br><small>${p.c}</small></li>`).join(''):'<li>No locations found</li>';
+ document.querySelectorAll('#results li[data-i]').forEach(li=>li.onclick=()=>{cur=PLACES[li.dataset.i];$('exBox').innerHTML=tile(cur.p,cur.s);$('exBox').classList.add('has');$('exName').textContent=cur.n;$('exCoord').textContent=cur.c;$('dlBtn').disabled=false})}
+$('searchBtn').onclick=search;$('q').onkeydown=e=>{if(e.key==='Enter')search()};search();
+$('dlBtn').onclick=()=>toast('Download started (demo)');
+// Compare
+$('cLoc').innerHTML=PLACES.map((p,i)=>`<option value="${i}">${p.n}</option>`).join('');
+$('cmpBtn').onclick=()=>{const p=PLACES[$('cLoc').value];
+ $('cA').innerHTML=tile(PAL.green,p.s);$('cB').innerHTML=tile(PAL.warm,p.s+40);
+ $('cAd').textContent=$('d1').value;$('cBd').textContent=$('d2').value;$('cmpOut').classList.remove('hide')};
+</script>
+</body>
+</html>
